@@ -1,9 +1,10 @@
 package com.Chino.testbot1.mavenbotdcjda.Listener;
 
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
 
 import org.jetbrains.annotations.NotNull;
+
+import com.Chino.testbot1.mavenbotdcjda.MavenBotDcJDA;
 
 import net.dv8tion.jda.api.events.channel.ChannelCreateEvent;
 import net.dv8tion.jda.api.events.channel.ChannelDeleteEvent;
@@ -13,25 +14,11 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
 public class EventChannelLogs extends ListenerAdapter{
 
-    private String getEventTime(ZonedDateTime chanAtTime){
-        //just to have a better display if the minute are under 10 so it display 14h03 and not 14h3
-        if(chanAtTime.getMinute() < 10){
-            return 
-            chanAtTime.getDayOfMonth() + "/" + chanAtTime.getMonthValue() + "/" + chanAtTime.getYear() + " "
-            + chanAtTime.getHour() + "h0" + chanAtTime.getMinute() + " ("
-            + chanAtTime.getOffset() + " " + chanAtTime.getZone() + ")";
-        }
-        return 
-            chanAtTime.getDayOfMonth() + "/" + chanAtTime.getMonthValue() + "/" + chanAtTime.getYear() + " "
-            + chanAtTime.getHour() + "h" + chanAtTime.getMinute() + " ("
-            + chanAtTime.getOffset() + " " + chanAtTime.getZone() + ")";
-    }
-
     @Override
     public void onChannelCreate(@NotNull ChannelCreateEvent event){
         event.getGuild().getTextChannelsByName("message_logs", true).get(0).sendMessage(
             "A " + event.getChannelType() + " channel have been created!"
-            + "\nAt: " + getEventTime(event.getChannel().getTimeCreated().atZoneSameInstant(ZoneId.systemDefault()))
+            + "\nAt: " + MavenBotDcJDA.getWhenCreated(event.getChannel().getTimeCreated().atZoneSameInstant(ZoneId.systemDefault()))
             + "\nWith the name: " + event.getChannel().getName()
             + "\nId: " + event.getChannel().getId()
             ).queue();
