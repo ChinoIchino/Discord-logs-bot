@@ -6,9 +6,12 @@ import java.time.ZonedDateTime;
 
 import javax.security.auth.login.LoginException;
 
+import com.Chino.testbot1.mavenbotdcjda.Commands.SlashCommandsLibrary;
+import com.Chino.testbot1.mavenbotdcjda.Listener.EventChannelLogs;
 //import the EventListener.java from listener file
 import com.Chino.testbot1.mavenbotdcjda.Listener.EventMessageLogs;
 import com.Chino.testbot1.mavenbotdcjda.Listener.EventRoleLogs;
+import com.Chino.testbot1.mavenbotdcjda.Listener.EventUserEntry;
 
 //get .env 
 import io.github.cdimascio.dotenv.Dotenv;
@@ -19,12 +22,15 @@ import net.dv8tion.jda.api.sharding.ShardManager;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 
 
 public class MavenBotDcJDA {
     private final ShardManager shardManager;
     private final Dotenv config;
+    private static TextChannel logChan = null;
+    //private Channel logChan;
 
     public MavenBotDcJDA() throws LoginException{
         //get the token in the .env file
@@ -41,14 +47,13 @@ public class MavenBotDcJDA {
         builder.setMemberCachePolicy(MemberCachePolicy.ALL);
         //ask the bot to add everyone to the member cache
         builder.setChunkingFilter(ChunkingFilter.ALL);
-        
-        shardManager = builder.build();
 
+        shardManager = builder.build();
         
         //shardManager.addEventListener(new EventListener(), new CommandsManager());
 
         //add listeners new EventMessageLogs(), new EventRoleLogs(), new EventChannelLogs(), new EventUserEntry()
-        shardManager.addEventListener(new EventMessageLogs(), new EventRoleLogs(), new EventChannelLogs(), new EventUserEntry());
+        shardManager.addEventListener(new SlashCommandsLibrary(), new EventMessageLogs(), new EventRoleLogs(), new EventChannelLogs(), new EventUserEntry());
     }
 
     //gets
@@ -57,6 +62,13 @@ public class MavenBotDcJDA {
     }
     public Dotenv getConfig(){
         return config;
+    }
+    //static get and set because its a general variable that is shared between all the events to get the log channel
+    public static void setLogChan(TextChannel channel){
+        logChan = channel;
+    }
+    public static TextChannel getLogChan(){
+        return logChan;
     }
 
     public static String getWhenCreated(ZonedDateTime event){
@@ -81,6 +93,6 @@ public class MavenBotDcJDA {
         } catch (LoginException e){
             System.out.println("Error: bot token is invalid!");
         }
-
+        //Channel logChan;
     }
 }
