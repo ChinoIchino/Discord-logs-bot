@@ -43,9 +43,25 @@ public class EventMessageLogs extends ListenerAdapter {
     }
     */
 
-    private void initMessage(Message message){
-        this.message = message;
-        this.messageRaw = message.getContentRaw();
+    //update the this.message and the this.messageRaw
+    private void setMessage(Message message){
+        if(message.getContentRaw() == ""){
+            //System.out.println("\nmessage.getContentRaw() = " + message.getContentRaw().toString() + "\nthis.messageRaw = " + this.messageRaw + "\nin 1st if");
+            this.messageRaw = "[Attachment]";
+            this.message = message;
+        }
+        else{
+            //System.out.println("\nmessage.getContentRaw() = " + message.getContentRaw().toString() + "\nthis.messageRaw = " + this.messageRaw + "\nin else");
+            this.messageRaw = message.getContentRaw().toString();
+            this.message = message;
+        }
+    }
+
+    private boolean isGif(Message message){
+        if(message.getContentRaw().equals(this.messageRaw)){
+            return true;
+        }
+        return false;
     }
 
     private void initUser(User user){
@@ -80,10 +96,12 @@ public class EventMessageLogs extends ListenerAdapter {
         //if the author of the message isnt the bot himself (to prevent a infinit loop)
         if(!(event.getAuthor().getName().equals("test_bot_1_JDA"))){
             initUser(event.getAuthor());
-            initMessage(event.getMessage());
+            setMessage(event.getMessage());
+
             //ask bot to send message to the log channel with all the information created before
-            event.getGuild().getTextChannelsByName("message_logs", true).get(0).sendMessage(
-                this.userName + " sent: " + this.messageRaw 
+            //sendMessage need a TextChannel var and not a Channel
+            MavenBotDcJDA.getLogChan().sendMessage(
+                this.userName + " (id= " + this.userId + ") sent: " + this.messageRaw 
                 + "\nAt: " + MavenBotDcJDA.getWhenCreated(event.getMessage().getTimeCreated().atZoneSameInstant(ZoneId.systemDefault())) 
                 + "\nIn the channel: " + event.getChannel().getAsMention()
                 + "\nId: " + event.getMessageId()
@@ -96,8 +114,8 @@ public class EventMessageLogs extends ListenerAdapter {
     public void onMessageDelete(@NotNull MessageDeleteEvent event){
 
         if(!(this.userName.equals("test_bot_1_JDA"))){
-                event.getGuild().getTextChannelsByName("message_logs", true).get(0).sendMessage(
-                    "The message: " + this.messageRaw + " from the user: " + this.userName + " have been deleted! "
+                MavenBotDcJDA.getLogChan().sendMessage(
+                    "The message: " + this.messageRaw + " from the user: " + this.userName + " (id= " + this.userId + ") have been deleted! "
                     + "\nIn the channel: " + event.getChannel().getAsMention()
                     + "\nId: " + event.getMessageId()
                     ).queue();
@@ -108,36 +126,43 @@ public class EventMessageLogs extends ListenerAdapter {
     public void onMessageUpdate(@NotNull MessageUpdateEvent event){
 
         if(!(event.getAuthor().getName().equals("test_bot_1_JDA"))){
-            if(this.message != null){
-                event.getGuild().getTextChannelsByName("message_logs", true).get(0).sendMessage(
+            //gifs can activate the onMessageUpdate event the moment they are sent, so this if statement is to bypass that problem
+            if(this.message != null && !(this.isGif(event.getMessage()))){
+                MavenBotDcJDA.getLogChan().sendMessage(
                     this.userName + " (id= " + this.userId + ") modified his message! " 
                     + "\nFrom: " + this.messageRaw + "\nInto: " + event.getMessage().getContentRaw()
                     + "\nIn the channel: " + event.getChannel().getAsMention()
                     + "\nId: " + event.getMessageId()
                     ).queue();
             }
+            System.out.println(
+                "The update event have been activated \nisGif() = " + this.isGif(event.getMessage())
+                + "\nthis.messageRaw = " + this.messageRaw 
+                + "\nevent.getMessage() = " + event.getMessage().getContentRaw()
+            );
+
+            //gifs can activate the onMessageUpdate event the moment they are sent, so this if statement is to bypass that problem
+
+            setMessage(event.getMessage());
+        }
 
             else{
-                initMessage(event.getMessage());
+                setMessage(event.getMessage());
 
-                event.getGuild().getTextChannelsByName("message_logs", true).get(0).sendMessage(
+                MavenBotDcJDA.getLogChan().sendMessage(
                     this.userName + " (id= " + this.userId + ") modified his message! " 
                     + "\nFrom: " + this.messageRaw + "\nInto: " + event.getMessage().getContentRaw()
                     + "\nIn the channel: " + event.getChannel().getAsMention()
                     + "\nId: " + event.getMessageId()
                     ).queue();
             }
-
-            //update messageRaw and message with the new values
-            initMessage(event.getMessage());
-        }
     }
 
     //get activated when a reaction is added to a message 
     @Override
     public void onMessageReactionAdd(@NotNull MessageReactionAddEvent event){
 
-        event.getGuild().getTextChannelsByName("message_logs", true).get(0).sendMessage(
+        MavenBotDcJDA.getLogChan().sendMessage(
             this.userName + " added a emoji: " + event.getEmoji().getName() 
             + "\nOn the message: " + this.messageRaw
             + "\nIn the channel: " + event.getChannel().getAsMention()
@@ -150,7 +175,7 @@ public class EventMessageLogs extends ListenerAdapter {
     @Override
     public void onMessageReactionRemove(@NotNull MessageReactionRemoveEvent event){
 
-        event.getGuild().getTextChannelsByName("message_logs", true).get(0).sendMessage(
+        MavenBotDcJDA.getLogChan().sendMessage(
             this.userName + " removed a emoji: " + event.getEmoji().getName() 
             + "\nOn the message: " + this.messageRaw
             + "\nIn the channel: " + event.getChannel().getAsMention()

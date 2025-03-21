@@ -65,7 +65,7 @@ public class EventRoleLogs extends ListenerAdapter{
     public void onRoleCreate(@NotNull RoleCreateEvent event){
         setEventRole(event.getRole());
 
-        event.getGuild().getTextChannelsByName("message_logs", true).get(0).sendMessage(
+        MavenBotDcJDA.getLogChan().sendMessage(
             //event.getMessage().getTimeCreated().atZoneSameInstant(ZoneId.systemDefault()
             "A new role have been created! \nAt: " + MavenBotDcJDA.getWhenCreated(event.getRole().getTimeCreated().atZoneSameInstant(ZoneId.systemDefault()))
             + "\nId: " + event.getRole().getId()
@@ -75,7 +75,7 @@ public class EventRoleLogs extends ListenerAdapter{
     @Override
     public void onRoleDelete(@NotNull RoleDeleteEvent event){
 
-        event.getGuild().getTextChannelsByName("message_logs", true).get(0).sendMessage(
+        MavenBotDcJDA.getLogChan().sendMessage(
             "The role \"" + event.getRole().getName() + "\" have been deleted!" 
             + "\nId: " + event.getRole().getId()
             ).queue();
@@ -85,7 +85,7 @@ public class EventRoleLogs extends ListenerAdapter{
     public void onRoleUpdatePermissions(@NotNull RoleUpdatePermissionsEvent event){
         String newPerms = event.getNewPermissions().toString();
 
-        event.getGuild().getTextChannelsByName("message_logs", true).get(0).sendMessage(
+        MavenBotDcJDA.getLogChan().sendMessage(
             "The role: \"" + event.getRole().getName() + "\" got his perms modified!"
             + "\nOld perms: " + event.getOldValue() 
             + "\nNew perms: " + newPerms 
@@ -96,7 +96,7 @@ public class EventRoleLogs extends ListenerAdapter{
     @Override
     public void onRoleUpdateName(@NotNull RoleUpdateNameEvent event){
 
-        event.getGuild().getTextChannelsByName("message_logs", true).get(0).sendMessage(
+        MavenBotDcJDA.getLogChan().sendMessage(
             "The role: \"" + event.getOldValue() + "\" got his name modified!" 
             + "\nNew name: " + event.getNewValue()
             + "\nId: " + event.getRole().getId()
@@ -107,14 +107,14 @@ public class EventRoleLogs extends ListenerAdapter{
     public void onRoleUpdateColor(@NotNull RoleUpdateColorEvent event){
 
         if(this.oldColor != null){
-            event.getGuild().getTextChannelsByName("message_logs", true).get(0).sendMessage(
+            MavenBotDcJDA.getLogChan().sendMessage(
                 "The role: " + role.getName() + " got his color modified!"
                 + "\nOld color: " + getColor(event, false) + "\nNew color: " + getColor(event, true)
                 + "\nId: " + role.getId()
             ).queue();
         }
         else if(this.oldColor == null){
-            event.getGuild().getTextChannelsByName("message_logs", true).get(0).sendMessage(
+            MavenBotDcJDA.getLogChan().sendMessage(
                 "The role: " + role.getName() + " got his color modified!"
                 + "\nOld color: Default Role Color"
                 + "\nNew color: " + getColor(event, true)
@@ -126,7 +126,7 @@ public class EventRoleLogs extends ListenerAdapter{
     @Override
     public void onGuildMemberRoleAdd(GuildMemberRoleAddEvent event) {
 
-        event.getGuild().getTextChannelsByName("message_logs", true).get(0).sendMessage(
+        MavenBotDcJDA.getLogChan().sendMessage(
         "The role: \"" + getEventRole().getName() + "\" have been added to the user: " + event.getUser().getName()
         ).queue();
     }
@@ -134,7 +134,7 @@ public class EventRoleLogs extends ListenerAdapter{
     @Override
     public void onGuildMemberRoleRemove(GuildMemberRoleRemoveEvent event) {
 
-        event.getGuild().getTextChannelsByName("message_logs", true).get(0).sendMessage(
+        MavenBotDcJDA.getLogChan().sendMessage(
             "The role: \"" + getEventRole().getName() + "\" have been removed from the user: " + event.getUser().getName()
             ).queue();
     }

@@ -2,6 +2,8 @@ package com.Chino.testbot1.mavenbotdcjda.Listener;
 
 import org.jetbrains.annotations.NotNull;
 
+import com.Chino.testbot1.mavenbotdcjda.MavenBotDcJDA;
+
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent;
 import net.dv8tion.jda.api.events.guild.member.update.GuildMemberUpdateNicknameEvent;
@@ -19,7 +21,7 @@ public class EventUserEntry extends ListenerAdapter{
         if(event.getGuild().getRolesByName("New", false).isEmpty()){
             event.getGuild().createRole().setName("New").queue();
 
-            event.getGuild().getTextChannelsByName("message_logs", true).get(0).sendMessage(
+            MavenBotDcJDA.getLogChan().sendMessage(
                 "The role \"New\" have been created and implemented in the new user that joined"
             ).queue();
         }
@@ -30,7 +32,7 @@ public class EventUserEntry extends ListenerAdapter{
             event.getMember(), event.getGuild().getRoleById(roleId)
             ).queue();
 
-        event.getGuild().getTextChannelsByName("message_logs", true).get(0).sendMessage(
+        MavenBotDcJDA.getLogChan().sendMessage(
             "A new user joined the server: " + this.name
         ).queue();
     }
@@ -38,7 +40,7 @@ public class EventUserEntry extends ListenerAdapter{
     @Override
     public void onGuildMemberRemove(GuildMemberRemoveEvent event) {
 
-        event.getGuild().getTextChannelsByName("message_logs", true).get(0).sendMessage(
+        MavenBotDcJDA.getLogChan().sendMessage(
             this.name + " quit the server :("
         ).queue();
     }
@@ -46,7 +48,7 @@ public class EventUserEntry extends ListenerAdapter{
     @Override
     public void onGuildMemberUpdateNickname(@NotNull GuildMemberUpdateNicknameEvent event){
         
-        event.getGuild().getTextChannelsByName("message_logs", true).get(0).sendMessage(
+        MavenBotDcJDA.getLogChan().sendMessage(
             "The user: " + event.getUser().getName() + " changed his nickname!"
             + "\nOld nickname: " + event.getOldNickname()
             + "\nNew nickname: " + event.getNewNickname()
