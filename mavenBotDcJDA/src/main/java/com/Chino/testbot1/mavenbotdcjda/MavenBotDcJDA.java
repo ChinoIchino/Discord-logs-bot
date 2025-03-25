@@ -3,6 +3,7 @@ package com.Chino.testbot1.mavenbotdcjda;
 //import from java lib
 import java.io.IOException;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 
 import javax.security.auth.login.LoginException;
 
@@ -19,8 +20,6 @@ import io.github.cdimascio.dotenv.Dotenv;
 //import from JDA
 import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder;
 import net.dv8tion.jda.api.sharding.ShardManager;
-import net.dv8tion.jda.api.utils.ChunkingFilter;
-import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.requests.GatewayIntent;
@@ -30,6 +29,7 @@ public class MavenBotDcJDA {
     private final ShardManager shardManager;
     private final Dotenv config;
     private static TextChannel logChan = null;
+    private static ArrayList<TextChannel> safeChanList = new ArrayList<>();
     //private Channel logChan;
 
     public MavenBotDcJDA() throws LoginException{
@@ -41,18 +41,12 @@ public class MavenBotDcJDA {
         DefaultShardManagerBuilder builder = DefaultShardManagerBuilder.createDefault(token);
         //set a activity for the bot
         builder.setActivity(Activity.playing("On Chino Patience"));
-        //open gateway to be able listen for messaage, guild join,... that are used in triggers
+        //open gateway to be able listen for messages, guild join, leave, etc... that are used in triggers
         builder.enableIntents(GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_MEMBERS);
-        //let the bot retrieve all the users in the server (used in the initGetNameAndGetId function in eventMessageLogs)
-        builder.setMemberCachePolicy(MemberCachePolicy.ALL);
-        //ask the bot to add everyone to the member cache
-        builder.setChunkingFilter(ChunkingFilter.ALL);
 
         shardManager = builder.build();
-        
-        //shardManager.addEventListener(new EventListener(), new CommandsManager());
 
-        //add listeners new EventMessageLogs(), new EventRoleLogs(), new EventChannelLogs(), new EventUserEntry()
+        //add listeners
         shardManager.addEventListener(new SlashCommandsLibrary(), new EventMessageLogs(), new EventRoleLogs(), new EventChannelLogs(), new EventUserEntry());
     }
 
@@ -63,12 +57,27 @@ public class MavenBotDcJDA {
     public Dotenv getConfig(){
         return config;
     }
-    //static get and set because its a general variable that is shared between all the events to get the log channel
+
+    //static get and set because its a general variable that is shared between all the events
     public static void setLogChan(TextChannel channel){
         logChan = channel;
     }
     public static TextChannel getLogChan(){
         return logChan;
+    }
+
+    //functions about the safeChannelList
+    public static ArrayList<TextChannel> getSafeChanList(){
+        return safeChanList;
+    }
+    
+    public static boolean isInSafeChanList(TextChannel toFind){
+        for(int i = 0; i < getSafeChanList().size(); i++){
+            if(toFind.equals(getSafeChanList().get(i))){
+                return true;
+            }
+        }
+        return false;
     }
 
     public static String getWhenCreated(ZonedDateTime event){
@@ -85,6 +94,18 @@ public class MavenBotDcJDA {
             + event.getOffset() + " " + event.getZone() + ")";
     }
 
+    public static void clearLogChannel(TextChannel logChan){
+        //get the position of the channel
+        int position = logChan.getPositionInCategory();
+        //create a new channel with the same name and the same position
+        logChan.createCopy().setPosition(position).queue();
+        //delete the original (with all the logs)
+        logChan.delete().queue();
+
+        //set the new log channel
+        setLogChan((TextChannel) logChan.getGuild().getChannels().get(position));
+      }
+
 
     public static void main(String[] args) throws IOException{
         //catching token with LoginException if token is wrong the bot isnt created and the "Error: ..." shows up
@@ -93,6 +114,5 @@ public class MavenBotDcJDA {
         } catch (LoginException e){
             System.out.println("Error: bot token is invalid!");
         }
-        //Channel logChan;
     }
 }
